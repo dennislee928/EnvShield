@@ -144,6 +144,12 @@ koyeb services update envshield/envshield \
 
 repo 已附上可重複使用的部署腳本：[deploy_koyeb.sh](../scripts/deploy_koyeb.sh)
 
+如果你不想先執行互動式 `koyeb login`，也可以直接提供 token：
+
+```bash
+KOYEB_TOKEN=<your-koyeb-pat> ./scripts/deploy_koyeb.sh --config koyeb.yaml
+```
+
 最小用法：
 
 ```bash

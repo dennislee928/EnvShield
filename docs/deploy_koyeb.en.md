@@ -144,6 +144,12 @@ koyeb services update envshield/envshield \
 
 The repo now includes a reusable deployment script: [deploy_koyeb.sh](../scripts/deploy_koyeb.sh)
 
+If you do not want to run interactive `koyeb login` first, you can provide a token directly:
+
+```bash
+KOYEB_TOKEN=<your-koyeb-pat> ./scripts/deploy_koyeb.sh --config koyeb.yaml
+```
+
 Minimal usage:
 
 ```bash

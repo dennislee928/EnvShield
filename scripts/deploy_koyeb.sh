@@ -11,6 +11,7 @@ Options:
   --app <name>                 Koyeb app name. Required unless provided by config.
   --service <name>             Koyeb service name. Defaults to the app name.
   --git <repo>                 Git repo in Koyeb CLI format, e.g. github.com/org/repo. Required unless provided by config.
+  --token <token>              Koyeb personal access token. Defaults to $KOYEB_TOKEN if set.
   --git-branch <branch>        Git branch to deploy. Default: main.
   --public-url <url>           Value for ENVSHIELD_PUBLIC_URL. Default: https://envshield.invalid
   --region <code>              Deployment region. Repeatable.
@@ -49,6 +50,7 @@ CONFIG_PATH=""
 APP_NAME=""
 SERVICE_NAME=""
 GIT_REPO=""
+TOKEN="${KOYEB_TOKEN:-}"
 GIT_BRANCH="main"
 PUBLIC_URL="https://envshield.invalid"
 INSTANCE_TYPE="nano"
@@ -190,6 +192,10 @@ while [[ $# -gt 0 ]]; do
       GIT_REPO="${2:-}"
       shift 2
       ;;
+    --token)
+      TOKEN="${2:-}"
+      shift 2
+      ;;
     --git-branch)
       GIT_BRANCH="${2:-}"
       shift 2
@@ -256,6 +262,18 @@ fi
 
 require_command koyeb
 
+KOYEB_GLOBAL_ARGS=()
+if [[ -n "$TOKEN" ]]; then
+  KOYEB_GLOBAL_ARGS+=(--token "$TOKEN")
+fi
+if [[ -n "$ORGANIZATION" ]]; then
+  KOYEB_GLOBAL_ARGS+=(--organization "$ORGANIZATION")
+fi
+
+koyeb_cmd() {
+  koyeb "${KOYEB_GLOBAL_ARGS[@]}" "$@"
+}
+
 COMMON_ARGS=(
   --git "$GIT_REPO"
   --git-branch "$GIT_BRANCH"
@@ -273,10 +291,6 @@ COMMON_ARGS=(
   --wait-timeout "$WAIT_TIMEOUT"
 )
 
-if [[ -n "$ORGANIZATION" ]]; then
-  COMMON_ARGS+=(--organization "$ORGANIZATION")
-fi
-
 for region in "${REGIONS[@]}"; do
   COMMON_ARGS+=(--regions "$region")
 done
@@ -284,31 +298,27 @@ done
 app_exists=false
 service_exists=false
 
-if koyeb apps get "$APP_NAME" >/dev/null 2>&1; then
+if koyeb_cmd apps get "$APP_NAME" >/dev/null 2>&1; then
   app_exists=true
 fi
 
 if ! $app_exists; then
   echo "Creating app '$APP_NAME'..."
-  if [[ -n "$ORGANIZATION" ]]; then
-    koyeb apps create "$APP_NAME" --organization "$ORGANIZATION"
-  else
-    koyeb apps create "$APP_NAME"
-  fi
+  koyeb_cmd apps create "$APP_NAME"
 fi
 
-if koyeb services get "$SERVICE_NAME" --app "$APP_NAME" >/dev/null 2>&1; then
+if koyeb_cmd services get "$SERVICE_NAME" --app "$APP_NAME" >/dev/null 2>&1; then
   service_exists=true
 fi
 
 if ! $service_exists; then
   echo "Creating service '$SERVICE_NAME' in app '$APP_NAME'..."
-  koyeb services create "$SERVICE_NAME" \
+  koyeb_cmd services create "$SERVICE_NAME" \
     --app "$APP_NAME" \
     "${COMMON_ARGS[@]}"
 else
   echo "Updating service '$SERVICE_NAME' in app '$APP_NAME'..."
-  koyeb services update "$APP_NAME/$SERVICE_NAME" \
+  koyeb_cmd services update "$APP_NAME/$SERVICE_NAME" \
     "${COMMON_ARGS[@]}"
 fi
 
@@ -321,6 +331,9 @@ echo "Branch:   $GIT_BRANCH"
 echo "Public:   $PUBLIC_URL"
 if [[ -n "$CONFIG_PATH" ]]; then
   echo "Config:   $CONFIG_PATH"
+fi
+if [[ -n "$TOKEN" ]]; then
+  echo "Token:    provided"
 fi
 
 if [[ "$PUBLIC_URL" == "https://envshield.invalid" ]]; then

@@ -3,7 +3,7 @@
 
 app: envshield
 service: envshield
-repository: github.com/<owner>/<repo>
+repository: github.com/dennislee928/EnvShield
 branch: main
 builder: docker
 dockerfile: Dockerfile
