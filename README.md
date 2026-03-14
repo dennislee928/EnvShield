@@ -57,3 +57,5 @@ Deployment guides:
 - [Koyeb guide (EN)](./docs/deploy_koyeb.en.md)
 - [Hugging Face Space guide](./docs/deploy_huggingface_space.md)
 - [Hugging Face Space guide (EN)](./docs/deploy_huggingface_space.en.md)
+- [GitHub branch protection guide](./docs/branch_protection.md)
+- [GitHub branch protection guide (EN)](./docs/branch_protection.en.md)

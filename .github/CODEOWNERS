@@ -1,0 +1,35 @@
+# EnvShield starter CODEOWNERS file.
+# The last matching rule wins, so keep broad defaults near the top and
+# path-specific ownership lower if the team grows later.
+
+# Default fallback owner for the whole repository.
+* @dennislee928
+
+# Repository governance and automation.
+/.github/ @dennislee928
+/README.md @dennislee928
+/plan.md @dennislee928
+
+# Shared contracts and package metadata.
+/contracts/ @dennislee928
+/package.json @dennislee928
+/package-lock.json @dennislee928
+/Cargo.toml @dennislee928
+/Cargo.lock @dennislee928
+
+# Frontend and generated TypeScript client.
+/apps/ @dennislee928
+/packages/ @dennislee928
+
+# Control plane and backend services.
+/services/ @dennislee928
+
+# CLI and language wrappers.
+/crates/ @dennislee928
+/wrappers/ @dennislee928
+
+# Deployment assets and project docs.
+/Dockerfile @dennislee928
+/koyeb.yaml @dennislee928
+/scripts/ @dennislee928
+/docs/ @dennislee928
