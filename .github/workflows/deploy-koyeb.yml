@@ -1,27 +1,17 @@
 name: Deploy Koyeb
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - ".github/workflows/deploy-koyeb.yml"
-      - "Dockerfile"
-      - "koyeb.yaml"
-      - "package.json"
-      - "package-lock.json"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "contracts/**"
-      - "apps/**"
-      - "packages/**"
-      - "services/**"
-      - "crates/**"
-      - "scripts/deploy_koyeb.sh"
   workflow_dispatch:
     inputs:
       git_ref:
-        description: "Git ref to validate and deploy"
+        description: "Git ref to deploy"
         required: false
         default: "main"
         type: string
@@ -32,74 +22,24 @@ on:
         type: string
 
 concurrency:
-  group: deploy-koyeb-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref_name }}
+  group: deploy-koyeb-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  validate:
-    name: Validate monorepo
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install JS dependencies
-        run: npm ci
-
-      - name: Generate API types
-        run: npm run generate:types
-
-      - name: Typecheck workspaces
-        run: npm run typecheck
-
-      - name: Test workspaces
-        run: npm test
-
-      - name: Build workspaces
-        run: npm run build
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22"
-
-      - name: Test control plane
-        working-directory: services/control-plane
-        run: go test ./...
-
-      - name: Test Go wrapper
-        working-directory: wrappers/go
-        run: go test ./...
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Test Rust CLI
-        run: cargo test --locked
-
-      - name: Build deployment image
-        run: docker build -t envshield-ci .
-
   deploy:
     name: Deploy to Koyeb
     runs-on: ubuntu-latest
-    needs: validate
     environment: koyeb
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.event.workflow_run.head_sha }}
 
       - name: Install Koyeb CLI
         run: |
@@ -122,7 +62,7 @@ jobs:
           KOYEB_PUBLIC_URL: ${{ vars.KOYEB_PUBLIC_URL }}
           KOYEB_ORGANIZATION: ${{ vars.KOYEB_ORGANIZATION }}
           WORKFLOW_PUBLIC_URL: ${{ github.event.inputs.public_url }}
-          WORKFLOW_GIT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref_name }}
+          WORKFLOW_GIT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.event.workflow_run.head_branch }}
           GITHUB_REPOSITORY_SLUG: ${{ github.repository }}
         run: |
           set -euo pipefail

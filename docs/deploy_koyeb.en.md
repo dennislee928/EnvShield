@@ -78,6 +78,7 @@ After that, future redeploys are just edits to `koyeb.yaml` plus rerunning the s
 
 If you want automatic deployment from GitHub Actions, the repo now also includes:
 
+- [ci.yml](../.github/workflows/ci.yml)
 - [deploy-koyeb.yml](../.github/workflows/deploy-koyeb.yml)
 
 Recommended repository settings:
@@ -86,7 +87,11 @@ Recommended repository settings:
 - GitHub Variable: `KOYEB_PUBLIC_URL`
 - GitHub Variable: `KOYEB_ORGANIZATION` if you deploy into an organization
 
-The workflow auto-deploys on relevant `main` branch changes and also supports manual `workflow_dispatch`.
+The flow is now:
+
+1. `ci.yml` handles pure test and build validation on pushes and pull requests.
+2. `deploy-koyeb.yml` only deploys after `CI` succeeds on `main`.
+3. `deploy-koyeb.yml` still supports manual `workflow_dispatch`.
 
 ## 3. Create or update the service with the CLI
 

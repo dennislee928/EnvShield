@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/deploy-koyeb.yml"
+      - "Dockerfile"
+      - "koyeb.yaml"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "contracts/**"
+      - "apps/**"
+      - "packages/**"
+      - "services/**"
+      - "crates/**"
+      - "wrappers/**"
+      - "scripts/*.sh"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/deploy-koyeb.yml"
+      - "Dockerfile"
+      - "koyeb.yaml"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "contracts/**"
+      - "apps/**"
+      - "packages/**"
+      - "services/**"
+      - "crates/**"
+      - "wrappers/**"
+      - "scripts/*.sh"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  javascript:
+    name: JavaScript
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Generate API types
+        run: npm run generate:types
+
+      - name: Verify generated client is committed
+        run: git diff --exit-code -- packages/api-client/src/generated.ts
+
+      - name: Typecheck workspaces
+        run: npm run typecheck
+
+      - name: Test workspaces
+        run: npm test
+
+      - name: Build workspaces
+        run: npm run build
+
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Test control plane
+        working-directory: services/control-plane
+        run: go test ./...
+
+      - name: Test Go wrapper
+        working-directory: wrappers/go
+        run: go test ./...
+
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Test Rust CLI
+        run: cargo test --locked
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Lint deployment scripts
+        run: |
+          bash -n scripts/deploy_koyeb.sh
+          bash -n scripts/deploy_huggingface_space.sh
+
+  container:
+    name: Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build deployment image
+        run: docker build -t envshield-ci .

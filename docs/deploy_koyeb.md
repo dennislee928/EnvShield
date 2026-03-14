@@ -78,6 +78,7 @@ regions: fra
 
 如果你要用 GitHub Actions 自動部署，repo 也已經附上 workflow：
 
+- [ci.yml](../.github/workflows/ci.yml)
 - [deploy-koyeb.yml](../.github/workflows/deploy-koyeb.yml)
 
 建議至少設定：
@@ -86,7 +87,11 @@ regions: fra
 - GitHub Variable: `KOYEB_PUBLIC_URL`
 - GitHub Variable: `KOYEB_ORGANIZATION`（如果你是用 organization）
 
-workflow 會在 `main` 上與 Koyeb 相關的應用程式變更時自動部署，也支援手動 `workflow_dispatch`。
+流程現在是：
+
+1. `ci.yml` 在 push / PR 時跑純測試與建置驗證。
+2. `deploy-koyeb.yml` 只會在 `main` 分支的 `CI` 成功後自動部署。
+3. `deploy-koyeb.yml` 也支援手動 `workflow_dispatch`。
 
 ## 3. 用 CLI 建立或更新服務
 
