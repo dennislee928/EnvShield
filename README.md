@@ -50,3 +50,8 @@ That container serves:
 - `/v1/*` for the API
 - `/healthz` for health checks
 - `/` for the console UI
+
+Deployment guides:
+
+- [Hugging Face Space guide](./docs/deploy_huggingface_space.md)
+- [Hugging Face Space guide (EN)](./docs/deploy_huggingface_space.en.md)
