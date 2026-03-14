@@ -290,11 +290,11 @@ fi
 
 if ! $app_exists; then
   echo "Creating app '$APP_NAME'..."
-  APP_CREATE_ARGS=()
   if [[ -n "$ORGANIZATION" ]]; then
-    APP_CREATE_ARGS+=(--organization "$ORGANIZATION")
+    koyeb apps create "$APP_NAME" --organization "$ORGANIZATION"
+  else
+    koyeb apps create "$APP_NAME"
   fi
-  koyeb apps create "$APP_NAME" "${APP_CREATE_ARGS[@]}"
 fi
 
 if koyeb services get "$SERVICE_NAME" --app "$APP_NAME" >/dev/null 2>&1; then

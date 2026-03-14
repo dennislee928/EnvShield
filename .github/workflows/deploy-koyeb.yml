@@ -1,0 +1,147 @@
+name: Deploy Koyeb
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/deploy-koyeb.yml"
+      - "Dockerfile"
+      - "koyeb.yaml"
+      - "package.json"
+      - "package-lock.json"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "contracts/**"
+      - "apps/**"
+      - "packages/**"
+      - "services/**"
+      - "crates/**"
+      - "scripts/deploy_koyeb.sh"
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Git ref to validate and deploy"
+        required: false
+        default: "main"
+        type: string
+      public_url:
+        description: "Optional override for ENVSHIELD_PUBLIC_URL"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: deploy-koyeb-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate monorepo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Generate API types
+        run: npm run generate:types
+
+      - name: Typecheck workspaces
+        run: npm run typecheck
+
+      - name: Test workspaces
+        run: npm test
+
+      - name: Build workspaces
+        run: npm run build
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Test control plane
+        working-directory: services/control-plane
+        run: go test ./...
+
+      - name: Test Go wrapper
+        working-directory: wrappers/go
+        run: go test ./...
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Test Rust CLI
+        run: cargo test --locked
+
+      - name: Build deployment image
+        run: docker build -t envshield-ci .
+
+  deploy:
+    name: Deploy to Koyeb
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: koyeb
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref }}
+
+      - name: Install Koyeb CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/koyeb/koyeb-cli/master/install.sh | sh
+          echo "$HOME/.koyeb/bin" >> "$GITHUB_PATH"
+
+      - name: Verify deployment secret
+        env:
+          KOYEB_TOKEN: ${{ secrets.KOYEB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${KOYEB_TOKEN:-}" ]]; then
+            echo "KOYEB_TOKEN GitHub secret is required." >&2
+            exit 1
+          fi
+
+      - name: Deploy with koyeb.yaml
+        env:
+          KOYEB_TOKEN: ${{ secrets.KOYEB_TOKEN }}
+          KOYEB_PUBLIC_URL: ${{ vars.KOYEB_PUBLIC_URL }}
+          KOYEB_ORGANIZATION: ${{ vars.KOYEB_ORGANIZATION }}
+          WORKFLOW_PUBLIC_URL: ${{ github.event.inputs.public_url }}
+          WORKFLOW_GIT_REF: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.git_ref || github.ref_name }}
+          GITHUB_REPOSITORY_SLUG: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          deploy_ref="${WORKFLOW_GIT_REF:-main}"
+          public_url="${WORKFLOW_PUBLIC_URL:-${KOYEB_PUBLIC_URL:-}}"
+
+          args=(
+            --config koyeb.yaml
+            --git "github.com/${GITHUB_REPOSITORY_SLUG}"
+            --git-branch "${deploy_ref}"
+          )
+
+          if [[ -n "${public_url}" ]]; then
+            args+=(--public-url "${public_url}")
+          fi
+
+          if [[ -n "${KOYEB_ORGANIZATION:-}" ]]; then
+            args+=(--organization "${KOYEB_ORGANIZATION}")
+          fi
+
+          ./scripts/deploy_koyeb.sh "${args[@]}"
