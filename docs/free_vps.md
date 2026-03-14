@@ -210,4 +210,48 @@
 
 ---
 
+## 6. 依情境分類之其他參考平台
+
+以下平台依使用情境整理，規格與免費額度請以各官網為準。
+
+### 6.1 微服務與核心 API 託管
+
+適用於以 Go、Python 或 Node.js 撰寫之核心業務邏輯與 API。
+
+| 平台 | 簡述 | 連結 |
+|------|------|------|
+| Adaptable.io | 全端容器；連線 GitHub 自動辨識運行時，免費層內建 PostgreSQL 或 MongoDB，適合儲存金鑰與設定。 | [Adaptable.io](https://adaptable.io/) |
+| Choreo | WSO2 出品之開發者平台，免費層大方；支援 Go / Python / Node.js，可視化微服務拓撲。 | [Choreo](https://wso2.com/choreo/) |
+| Leapcell | Serverless 託管，支援 Go / Python / Node.js；內建 SQLite 分散式儲存，適合輕量狀態。 | [Leapcell](https://leapcell.io/) |
+| Genezio | Node.js / TypeScript 友善；型別安全 RPC，前端或 CLI 可像本地函數般呼叫後端。 | [Genezio](https://genezio.com/) |
+
+### 6.2 邊緣運算與 WebAssembly (Wasm)
+
+適用於 Rust 撰寫之端到端加密或安全模組，編譯為 Wasm 部署。
+
+| 平台 | 簡述 | 連結 |
+|------|------|------|
+| Fermyon Cloud | 專為 Wasm 設計之 Serverless；Rust 編譯 Wasm 部署，低冷啟動、毫秒級回應。 | [Fermyon Cloud](https://www.fermyon.com/fermyon-cloud) |
+| Deno Deploy | 全球邊緣節點；支援 JS/TS 與 Wasm，可載入 Rust 編譯之 Wasm 模組，降低驗證延遲。 | [Deno Deploy](https://deno.com/deploy) |
+
+### 6.3 背景任務與自動化工作流
+
+適用於排程任務、Webhook 觸發、變數同步 Worker 等。
+
+| 平台 | 簡述 | 連結 |
+|------|------|------|
+| Windmill.dev | 開源；將 Python / Go / TypeScript 腳本化為 API 或排程任務，含 UI，適合變數同步 Worker。 | [Windmill](https://windmill.dev/) |
+| Pipedream | 事件驅動；Webhook 觸發 Node.js / Python / Go，可監聽部署事件並觸發變數同步。 | [Pipedream](https://pipedream.com/) |
+| Val Town | 輕量 TypeScript；於網頁撰寫 function 即對外為 API，適合格式轉換或簡易 webhook。 | [Val Town](https://www.val.town/) |
+
+### 6.4 自管基礎設施（Kubernetes）
+
+適用於需自行掌控編排與 YAML 之部署。
+
+| 平台 | 簡述 | 連結 |
+|------|------|------|
+| KubeSail | 免費 Kubernetes 命名空間（免綁卡）；可自建 Docker 與 YAML 部署 Go / Node.js 微服務。 | [KubeSail](https://kubesail.com/) |
+
+---
+
 *本文件為 EnvShield 專案之技術說明，平台條款與計費以各服務官網為準。*

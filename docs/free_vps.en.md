@@ -210,4 +210,48 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 
 ---
 
+## 6. Other Platforms by Use Case
+
+The following platforms are grouped by scenario. Check each provider’s site for current specs and free-tier limits.
+
+### 6.1 Microservices and Core API Hosting
+
+For core business logic and APIs in Go, Python, or Node.js.
+
+| Platform | Summary | Link |
+|----------|---------|------|
+| Adaptable.io | Full-stack containers; connect GitHub for auto runtime detection; free tier includes PostgreSQL or MongoDB, suitable for keys and config. | [Adaptable.io](https://adaptable.io/) |
+| Choreo | WSO2 developer platform with generous free tier; Go / Python / Node.js; visual microservice topology. | [Choreo](https://wso2.com/choreo/) |
+| Leapcell | Serverless hosting for Go / Python / Node.js; built-in distributed SQLite storage for lightweight state. | [Leapcell](https://leapcell.io/) |
+| Genezio | Node.js / TypeScript; type-safe RPC so frontend or CLI can call backend like local functions. | [Genezio](https://genezio.com/) |
+
+### 6.2 Edge and WebAssembly (Wasm)
+
+For Rust-based E2E crypto or security modules compiled to Wasm.
+
+| Platform | Summary | Link |
+|----------|---------|------|
+| Fermyon Cloud | Wasm-first Serverless; deploy Rust-compiled Wasm with low cold start and millisecond response. | [Fermyon Cloud](https://www.fermyon.com/fermyon-cloud) |
+| Deno Deploy | Global edge; JS/TS and Wasm support; load Rust-compiled Wasm modules to reduce verification latency. | [Deno Deploy](https://deno.com/deploy) |
+
+### 6.3 Background Jobs and Automation
+
+For scheduled jobs, webhook-triggered flows, and variable-sync workers.
+
+| Platform | Summary | Link |
+|----------|---------|------|
+| Windmill.dev | Open source; turn Python / Go / TypeScript scripts into APIs or scheduled jobs with UI; good for sync workers. | [Windmill](https://windmill.dev/) |
+| Pipedream | Event-driven; webhooks trigger Node.js / Python / Go; e.g. listen to deploy events and trigger variable sync. | [Pipedream](https://pipedream.com/) |
+| Val Town | Lightweight TypeScript; write functions in the browser and expose as APIs; good for transforms or simple webhooks. | [Val Town](https://www.val.town/) |
+
+### 6.4 Self-Managed Infrastructure (Kubernetes)
+
+For deployments that require full control over orchestration and YAML.
+
+| Platform | Summary | Link |
+|----------|---------|------|
+| KubeSail | Free Kubernetes namespace (no card); run your own Docker and YAML for Go / Node.js microservices. | [KubeSail](https://kubesail.com/) |
+
+---
+
 *This document is technical guidance for the EnvShield project. Terms and pricing are determined by each provider’s official site.*
