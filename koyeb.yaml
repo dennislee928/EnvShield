@@ -11,7 +11,7 @@ instance_type: nano
 ports: 8080:http
 routes: /:8080
 checks: 8080:http:/healthz
-public_url: https://envshield.invalid
+public_url: https://envshield-wolf-alpha-3c512c3a.koyeb.app
 regions: fra
 organization: ""
 min_scale: 1
