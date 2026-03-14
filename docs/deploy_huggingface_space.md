@@ -51,6 +51,33 @@ git commit -m "chore: prepare hugging face space readme"
 git push hf-space deploy/hf-space:main
 ```
 
+也可以直接使用 repo 內建腳本：[deploy_huggingface_space.sh](../scripts/deploy_huggingface_space.sh)
+
+最小用法：
+
+```bash
+./scripts/deploy_huggingface_space.sh \
+  --space <hf-username>/<space-name>
+```
+
+如果你想在 CI 或非互動環境中 push，可以帶 token：
+
+```bash
+./scripts/deploy_huggingface_space.sh \
+  --space <hf-username>/<space-name> \
+  --username <hf-username> \
+  --token <hf-token>
+```
+
+這個腳本會：
+
+1. 檢查工作樹是否乾淨。
+2. 建立臨時 worktree 與臨時部署分支。
+3. 只在部署分支覆蓋 `README.md` 為 Space 模板。
+4. 強制推送到 Hugging Face Space 的目標 branch。
+
+好處是你不需要永久改動主分支上的根目錄 `README.md`。
+
 ## 4. Space Variables 建議
 
 在 Space Settings -> Variables 裡至少設定：

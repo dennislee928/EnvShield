@@ -53,5 +53,7 @@ That container serves:
 
 Deployment guides:
 
+- [Koyeb guide](./docs/deploy_koyeb.md)
+- [Koyeb guide (EN)](./docs/deploy_koyeb.en.md)
 - [Hugging Face Space guide](./docs/deploy_huggingface_space.md)
 - [Hugging Face Space guide (EN)](./docs/deploy_huggingface_space.en.md)

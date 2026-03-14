@@ -1,0 +1,19 @@
+# Declarative Koyeb deployment settings for EnvShield.
+# This file is consumed by scripts/deploy_koyeb.sh.
+
+app: envshield
+service: envshield
+repository: github.com/<owner>/<repo>
+branch: main
+builder: docker
+dockerfile: Dockerfile
+instance_type: nano
+ports: 8080:http
+routes: /:8080
+checks: 8080:http:/healthz
+public_url: https://envshield.invalid
+regions: fra
+organization: ""
+min_scale: 1
+max_scale: 1
+wait_timeout: 10m

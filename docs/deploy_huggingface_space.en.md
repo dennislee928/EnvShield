@@ -51,6 +51,33 @@ git commit -m "chore: prepare hugging face space readme"
 git push hf-space deploy/hf-space:main
 ```
 
+You can also use the built-in script in this repo: [deploy_huggingface_space.sh](../scripts/deploy_huggingface_space.sh)
+
+Minimal usage:
+
+```bash
+./scripts/deploy_huggingface_space.sh \
+  --space <hf-username>/<space-name>
+```
+
+If you want to push from CI or another non-interactive environment, pass a token:
+
+```bash
+./scripts/deploy_huggingface_space.sh \
+  --space <hf-username>/<space-name> \
+  --username <hf-username> \
+  --token <hf-token>
+```
+
+This script will:
+
+1. Verify that the working tree is clean.
+2. Create a temporary worktree and deployment branch.
+3. Replace `README.md` with the Space template only in that deployment branch.
+4. Force-push to the target Hugging Face Space branch.
+
+That lets you keep the main repo `README.md` unchanged.
+
 ## 4. Recommended Space Variables
 
 In Space Settings -> Variables, set at least:
