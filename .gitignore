@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.turbo/
+.DS_Store
+target/
+coverage/
+.env
+.env.*
+!.env.example
+bin/
+.cache/
+*.log
+
+# Local EnvShield state
+.envshield/
+

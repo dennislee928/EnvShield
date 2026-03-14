@@ -1,0 +1,13 @@
+{
+  "name": "@envshield/cli",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "shield": "bin/shield.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "build": "node -e \"process.exit(0)\""
+  }
+}
+

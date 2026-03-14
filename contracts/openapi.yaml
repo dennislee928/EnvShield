@@ -1,0 +1,375 @@
+openapi: 3.1.0
+info:
+  title: EnvShield Control Plane API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /v1/auth/github/start:
+    post:
+      operationId: startGitHubAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartGitHubAuthRequest'
+      responses:
+        '200':
+          description: Device verification session created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartGitHubAuthResponse'
+  /v1/auth/device/approve:
+    post:
+      operationId: approveDeviceAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveDeviceAuthRequest'
+      responses:
+        '204':
+          description: Device flow approved.
+  /v1/auth/device/exchange:
+    post:
+      operationId: exchangeDeviceAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExchangeDeviceAuthRequest'
+      responses:
+        '200':
+          description: Device token issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeDeviceAuthResponse'
+  /v1/workspaces:
+    post:
+      operationId: createWorkspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkspaceRequest'
+      responses:
+        '201':
+          description: Workspace created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+  /v1/workspaces/{workspaceId}:
+    get:
+      operationId: getWorkspace
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Workspace details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+  /v1/devices:
+    post:
+      operationId: registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDeviceRequest'
+      responses:
+        '201':
+          description: Device registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    get:
+      operationId: listDevices
+      responses:
+        '200':
+          description: Devices registered to the caller.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [devices]
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+  /v1/snapshots:
+    post:
+      operationId: createSnapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSnapshotRequest'
+      responses:
+        '201':
+          description: Snapshot stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+  /v1/workspaces/{workspaceId}/environments/{environment}/snapshots/latest:
+    get:
+      operationId: getLatestSnapshot
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/Environment'
+      responses:
+        '200':
+          description: Latest snapshot metadata and encrypted payload.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snapshot'
+  /v1/workspaces/{workspaceId}/environments/{environment}/status:
+    get:
+      operationId: getEnvironmentStatus
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/Environment'
+        - in: query
+          name: local_version
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Environment sync status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentStatus'
+components:
+  parameters:
+    WorkspaceId:
+      in: path
+      name: workspaceId
+      required: true
+      schema:
+        type: string
+    Environment:
+      in: path
+      name: environment
+      required: true
+      schema:
+        type: string
+  schemas:
+    StartGitHubAuthRequest:
+      type: object
+      required: [deviceName]
+      properties:
+        deviceName:
+          type: string
+    StartGitHubAuthResponse:
+      type: object
+      required: [deviceCode, userCode, verificationUrl, expiresIn]
+      properties:
+        deviceCode:
+          type: string
+        userCode:
+          type: string
+        verificationUrl:
+          type: string
+        expiresIn:
+          type: integer
+    ApproveDeviceAuthRequest:
+      type: object
+      required: [deviceCode, actorEmail]
+      properties:
+        deviceCode:
+          type: string
+        actorEmail:
+          type: string
+          format: email
+    ExchangeDeviceAuthRequest:
+      type: object
+      required: [deviceCode]
+      properties:
+        deviceCode:
+          type: string
+    ExchangeDeviceAuthResponse:
+      type: object
+      required: [token, actorEmail]
+      properties:
+        token:
+          type: string
+        actorEmail:
+          type: string
+          format: email
+    CreateWorkspaceRequest:
+      type: object
+      required: [name, deviceId]
+      properties:
+        name:
+          type: string
+        deviceId:
+          type: string
+    Workspace:
+      type: object
+      required: [id, name, createdAt, members]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    Member:
+      type: object
+      required: [id, email, role]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [owner, maintainer, viewer]
+    RegisterDeviceRequest:
+      type: object
+      required: [name, encryptionPublicKey, signingPublicKey]
+      properties:
+        name:
+          type: string
+        encryptionPublicKey:
+          type: string
+        signingPublicKey:
+          type: string
+    Device:
+      type: object
+      required: [id, name, encryptionPublicKey, signingPublicKey, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        encryptionPublicKey:
+          type: string
+        signingPublicKey:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateSnapshotRequest:
+      type: object
+      required:
+        - workspaceId
+        - environment
+        - createdByDevice
+        - manifestSignature
+        - keyEnvelopes
+        - secrets
+      properties:
+        workspaceId:
+          type: string
+        environment:
+          type: string
+        createdByDevice:
+          type: string
+        manifestSignature:
+          type: string
+        keyEnvelopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyEnvelope'
+        secrets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecretItem'
+    Snapshot:
+      type: object
+      required:
+        - snapshotId
+        - workspaceId
+        - environment
+        - version
+        - createdByDevice
+        - createdAt
+        - manifestSignature
+        - keyEnvelopes
+        - secrets
+      properties:
+        snapshotId:
+          type: string
+        workspaceId:
+          type: string
+        environment:
+          type: string
+        version:
+          type: integer
+        createdByDevice:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        manifestSignature:
+          type: string
+        keyEnvelopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyEnvelope'
+        secrets:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecretItem'
+    KeyEnvelope:
+      type: object
+      required: [deviceId, recipient, encryptedKey]
+      properties:
+        deviceId:
+          type: string
+        recipient:
+          type: string
+        encryptedKey:
+          type: string
+    SecretItem:
+      type: object
+      required: [name, ciphertext, nonce, aadHash, valueChecksum]
+      properties:
+        name:
+          type: string
+        ciphertext:
+          type: string
+        nonce:
+          type: string
+        aadHash:
+          type: string
+        valueChecksum:
+          type: string
+    EnvironmentStatus:
+      type: object
+      required: [workspaceId, environment, latestVersion, localVersion, outOfDate]
+      properties:
+        workspaceId:
+          type: string
+        environment:
+          type: string
+        latestVersion:
+          type: integer
+        localVersion:
+          type: integer
+        outOfDate:
+          type: boolean
+

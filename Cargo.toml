@@ -1,0 +1,4 @@
+[workspace]
+members = ["crates/shield-cli"]
+resolver = "2"
+
