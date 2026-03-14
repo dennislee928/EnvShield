@@ -1,0 +1,13 @@
+.git
+.DS_Store
+node_modules
+target
+dist
+.turbo
+.cache
+.env
+.env.*
+.envshield
+apps/console/dist
+apps/console/tsconfig.tsbuildinfo
+

@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -13,12 +16,14 @@ import (
 
 type Router struct {
 	service *core.Service
+	static  http.Handler
 	mux     *http.ServeMux
 }
 
-func NewRouter(service *core.Service) *Router {
+func NewRouter(service *core.Service, staticDir string) *Router {
 	router := &Router{
 		service: service,
+		static:  staticHandler(staticDir),
 		mux:     http.NewServeMux(),
 	}
 	router.register()
@@ -43,6 +48,9 @@ func (r *Router) register() {
 	r.mux.HandleFunc("POST /v1/snapshots", r.handleCreateSnapshot)
 	r.mux.HandleFunc("GET /v1/workspaces/{workspaceId}/environments/{environment}/snapshots/latest", r.handleGetLatestSnapshot)
 	r.mux.HandleFunc("GET /v1/workspaces/{workspaceId}/environments/{environment}/status", r.handleEnvironmentStatus)
+	if r.static != nil {
+		r.mux.Handle("GET /", r.static)
+	}
 }
 
 func (r *Router) handleStartGitHubAuth(w http.ResponseWriter, req *http.Request) {
@@ -225,4 +233,44 @@ func writeDomainError(w http.ResponseWriter, err error) {
 		return
 	}
 	writeError(w, http.StatusInternalServerError, err)
+}
+
+func staticHandler(staticDir string) http.Handler {
+	if staticDir == "" {
+		return nil
+	}
+
+	info, err := os.Stat(staticDir)
+	if err != nil || !info.IsDir() {
+		return nil
+	}
+
+	fileSystem := http.Dir(staticDir)
+	fileServer := http.FileServer(fileSystem)
+
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		path := req.URL.Path
+		if path == "" || path == "/" {
+			http.ServeFile(w, req, filepath.Join(staticDir, "index.html"))
+			return
+		}
+
+		cleanPath := filepath.Clean(strings.TrimPrefix(path, "/"))
+		if cleanPath == "." {
+			http.ServeFile(w, req, filepath.Join(staticDir, "index.html"))
+			return
+		}
+
+		file, err := fileSystem.Open(cleanPath)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				http.ServeFile(w, req, filepath.Join(staticDir, "index.html"))
+				return
+			}
+			http.Error(w, "failed to read asset", http.StatusInternalServerError)
+			return
+		}
+		_ = file.Close()
+		fileServer.ServeHTTP(w, req)
+	})
 }

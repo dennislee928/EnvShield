@@ -5,8 +5,14 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/envshield/envshield/services/control-plane/internal/api"
+	"github.com/envshield/envshield/services/control-plane/internal/core"
+	"github.com/envshield/envshield/services/control-plane/internal/store"
 	"github.com/envshield/envshield/services/control-plane/internal/testutil"
 )
 
@@ -72,6 +78,52 @@ func TestDeviceFlowAndSnapshotLifecycle(t *testing.T) {
 	)
 	if outOfDate := status["outOfDate"].(bool); !outOfDate {
 		t.Fatal("expected local version to be out of date")
+	}
+}
+
+func TestRouterServesEmbeddedConsoleAssets(t *testing.T) {
+	tempDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(tempDir, "index.html"), []byte("EnvShield Console"), 0o644); err != nil {
+		t.Fatalf("write index: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(tempDir, "assets"), 0o755); err != nil {
+		t.Fatalf("mkdir assets: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(tempDir, "assets", "app.js"), []byte("asset-body"), 0o644); err != nil {
+		t.Fatalf("write asset: %v", err)
+	}
+
+	service := core.NewService(store.NewMemoryStore(), "http://localhost:8080")
+	router := api.NewRouter(service, tempDir)
+	server := httptest.NewServer(router.Handler())
+	defer server.Close()
+
+	response, err := http.Get(server.URL + "/approve?device_code=test")
+	if err != nil {
+		t.Fatalf("get approve page: %v", err)
+	}
+	defer response.Body.Close()
+
+	body, _ := io.ReadAll(response.Body)
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", response.StatusCode)
+	}
+	if !bytes.Contains(body, []byte("EnvShield Console")) {
+		t.Fatalf("expected SPA shell, got %q", body)
+	}
+
+	response, err = http.Get(server.URL + "/assets/app.js")
+	if err != nil {
+		t.Fatalf("get asset: %v", err)
+	}
+	defer response.Body.Close()
+
+	body, _ = io.ReadAll(response.Body)
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("expected asset 200, got %d", response.StatusCode)
+	}
+	if !bytes.Equal(body, []byte("asset-body")) {
+		t.Fatalf("unexpected asset body: %q", body)
 	}
 }
 

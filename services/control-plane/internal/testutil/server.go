@@ -11,6 +11,6 @@ import (
 func NewTestServer() *httptest.Server {
 	memory := store.NewMemoryStore()
 	service := core.NewService(memory, "http://localhost:5173")
-	router := api.NewRouter(service)
+	router := api.NewRouter(service, "")
 	return httptest.NewServer(router.Handler())
 }

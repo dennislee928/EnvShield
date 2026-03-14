@@ -34,3 +34,19 @@ EnvShield is a zero-knowledge developer secrets platform. Phase 1 ships a Rust C
 - The control plane defaults to an in-memory store for local development and tests, while keeping a store abstraction ready for a Postgres-backed implementation.
 - macOS and Linux are the initial supported platforms for the Rust CLI wrappers.
 
+## Container deployment
+
+The repository includes a root `Dockerfile` that builds the React console and the Go control plane into a single runtime image.
+
+```bash
+docker build -t envshield .
+docker run --rm -p 8080:8080 \
+  -e ENVSHIELD_PUBLIC_URL=http://localhost:8080 \
+  envshield
+```
+
+That container serves:
+
+- `/v1/*` for the API
+- `/healthz` for health checks
+- `/` for the console UI
