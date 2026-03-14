@@ -21,9 +21,9 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 | Serv00 | FreeBSD Shell (VPS-like) | 512 MB | 3 GB | Must log in every 3 months to keep account active |
 | Koyeb | Container PaaS | 512 MB | 0.1 vCPU / 1 free Web Service | No credit card; use an active GitHub account |
 | Hugging Face Spaces | Docker space | 16 GB | 2 vCPU | Sleeps after 48 h without traffic; ~1 min wake-up |
-| Back4App Containers | Container hosting (CaaS) | 250 MB | 0.1 vCPU / 1 free container | May pause after 30 days without traffic/deploys; restart manually |
-| Alwaysdata | All-in-one PaaS | 512 MB | 100 MB total space | Built-in DB/Cron/SSH; small space, rotate logs |
-| Deta Space | Personal micro-cloud / Serverless | per plan | Deta Base + Deta Drive | Node.js/Python only; no long-running background processes |
+| Back4App Containers | CaaS (container) | 250 MB | 0.1 vCPU / 1 free container | May pause after 30 days without traffic/deploys; restart manually |
+| Alwaysdata | Full-featured PaaS | 512 MB | 100 MB total space | Built-in DB/Cron; overage paid; logs must be rotated |
+| Deta Space | Serverless / micro-cloud | Not specified | Deta Base + Deta Drive | Node.js/Python only; no long-running processes; limited WebSocket |
 
 ---
 
@@ -93,7 +93,7 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 
 ### 3.4 Back4App Containers
 
-**Summary**: Back4App started as BaaS and later added container hosting (CaaS); free tier requires no card and suits Docker-based backends.
+**Summary**: Back4App started as BaaS and later added container hosting (CaaS) with a no–credit-card free tier, suitable for Docker-based backends.
 
 **Specifications**
 
@@ -103,17 +103,18 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 
 **Advantages**
 
-- Full Docker support; backend can be packaged as a Docker image (Go, Node.js, etc.) and deployed from GitHub with automatic build; environment is clean and controllable.  
+- Full Docker support; backends can be packaged as Docker images (Go or Node.js) and deployed from GitHub with automatic build and deploy; clean, controllable environment.  
+- No credit card required.  
 
 **Limitations**
 
-- If there is **no traffic or deployment for 30 days**, the container may be paused and must be restarted manually.  
+- If there is **no traffic or deploy activity for 30 days**, the container may be paused and require manual restart.  
 
 ---
 
 ### 3.5 Alwaysdata
 
-**Summary**: Long-standing European PaaS; free tier is feature-rich but small, suitable for lightweight MVPs.
+**Summary**: Long-standing European PaaS with a free tier that is feature-rich but capacity-limited; suitable for lightweight MVPs.
 
 **Specifications**
 
@@ -122,30 +123,35 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 
 **Advantages**
 
-- Free tier includes SSH, PostgreSQL/MySQL, Redis, RabbitMQ, and Cron; supports Node.js, Python, PHP, Ruby. Good for MVPs that only need to store lightweight encrypted variables.  
+- Free tier includes SSH, built-in PostgreSQL/MySQL, Redis, RabbitMQ, and Cron.  
+- Supports Node.js, Python, PHP, Ruby, and others.  
+- For an MVP that only stores lightweight encrypted variables, 100 MB is often sufficient.  
 
 **Limitations**
 
-- Only 100 MB space; overage requires payment; logs must be rotated or sent elsewhere.  
+- Only 100 MB space; overage is paid; logs must be rotated or sent elsewhere.  
 
 ---
 
 ### 3.6 Deta Space
 
-**Summary**: “Personal micro-cloud” and Space App model; Serverless, fully free, no card required.
+**Summary**: “Personal micro-cloud” platform where apps are published as Space Apps; free, no credit card, with strong data isolation.
 
 **Specifications**
 
-- Architecture: Serverless; no fixed RAM limit  
-- Built-in: NoSQL (Deta Base), file storage (Deta Drive)  
+- Architecture: Serverless; no explicit RAM limit  
+- Storage: built-in NoSQL (Deta Base) and file storage (Deta Drive)  
 
 **Advantages**
 
-- Node.js and Python supported; apps can be published to Space OS so others can one-click install into isolated spaces with data isolation, aligned with end-to-end encryption.  
+- Fully free; no credit card.  
+- Supports Node.js and Python.  
+- Apps can be published to Space OS so other developers can one-click install into their own isolated space; aligns with end-to-end encryption and data isolation.  
 
 **Limitations**
 
-- Only Node.js and Python supported natively; Serverless model does not support long-running background processes (limited WebSocket support).  
+- Only Node.js and Python are natively supported.  
+- Serverless model does not support long-running background processes; WebSocket support is limited.  
 
 ---
 
@@ -198,16 +204,10 @@ This document describes recommended free VPS and PaaS options for the EnvShield 
 - [Serv00](https://serv00.com/)  
 - [Koyeb](https://www.koyeb.com/)  
 - [Hugging Face Spaces](https://huggingface.co/spaces)  
-- [Back4App](https://www.back4app.com/)  
+- [Back4App Containers](https://www.back4app.com/)  
 - [Alwaysdata](https://www.alwaysdata.com/)  
 - [Deta Space](https://deta.space/)  
 
 ---
 
-## 6. Document Information and Disclaimer
-
-| Item | Description |
-|------|-------------|
-| Document type | EnvShield project technical reference; not an official contract or specification of any platform |
-| Terms and pricing | Governed by each provider’s official site |
-| 繁體中文版 | See [free_vps.md](./free_vps.md) |
+*This document is technical guidance for the EnvShield project. Terms and pricing are determined by each provider’s official site.*

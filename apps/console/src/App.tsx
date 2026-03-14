@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { EnvShieldApiClient, type Device, type EnvironmentStatus, type Snapshot } from "@envshield/api-client";
 
-const client = new EnvShieldApiClient(window.location.origin);
+const client = new EnvShieldApiClient(
+  typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080",
+);
 
 function readDeviceCode() {
+  if (typeof window === "undefined") {
+    return "";
+  }
   return new URLSearchParams(window.location.search).get("device_code") ?? "";
 }
 
@@ -150,7 +155,9 @@ export default function App() {
                 {
                   snapshotId: snapshot.snapshotId,
                   createdByDevice: snapshot.createdByDevice,
-                  secrets: snapshot.secrets.map((item) => item.name),
+                  secrets: snapshot.secrets.map(
+                    (item: Snapshot["secrets"][number]) => item.name,
+                  ),
                 },
                 null,
                 2,
@@ -162,4 +169,3 @@ export default function App() {
     </main>
   );
 }
-
