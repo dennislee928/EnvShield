@@ -10,7 +10,10 @@ coverage/
 bin/
 .cache/
 *.log
+robot-results/
+tests/robot/results/
+.venv-robot/
+__pycache__/
 
 # Local EnvShield state
 .envshield/
-

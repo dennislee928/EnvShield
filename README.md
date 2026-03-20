@@ -59,3 +59,7 @@ Deployment guides:
 - [Hugging Face Space guide (EN)](./docs/deploy_huggingface_space.en.md)
 - [GitHub branch protection guide](./docs/branch_protection.md)
 - [GitHub branch protection guide (EN)](./docs/branch_protection.en.md)
+
+Testing guides:
+
+- [Robot Framework API smoke guide](./tests/robot/README.md)

@@ -1,0 +1,61 @@
+name: Robot API Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Optional override for the deployed API base URL"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  robot-smoke:
+    name: Robot API Smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Robot Framework dependencies
+        run: python -m pip install -r tests/robot/requirements.txt
+
+      - name: Resolve BASE_URL
+        env:
+          INPUT_BASE_URL: ${{ github.event.inputs.base_url }}
+          KOYEB_PUBLIC_URL: ${{ vars.KOYEB_PUBLIC_URL }}
+        run: |
+          set -euo pipefail
+          base_url="${INPUT_BASE_URL:-}"
+          if [[ -z "$base_url" ]]; then
+            base_url="${KOYEB_PUBLIC_URL:-}"
+          fi
+          if [[ -z "$base_url" ]]; then
+            echo "KOYEB_PUBLIC_URL repository variable is required, or provide base_url manually." >&2
+            exit 1
+          fi
+          echo "BASE_URL=$base_url" >> "$GITHUB_ENV"
+
+      - name: Run Robot Framework smoke suite
+        run: |
+          set -euo pipefail
+          python -m robot \
+            --outputdir robot-results \
+            --variable BASE_URL:"${BASE_URL}" \
+            tests/robot/suites
+
+      - name: Upload Robot artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-api-smoke
+          path: robot-results
